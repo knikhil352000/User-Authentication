@@ -1,8 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
-const mongoose  = require('mongoose');
+const mongoose = require('mongoose');
 const app = express();
+const encrypt = require('mongoose-encryption');
 app.use(express.static('public'));
 mongoose.connect('mongodb://localhost:27017/userDB', {useNewUrlParser:true, useUnifiedTopology: true});
 
@@ -11,10 +12,13 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
-}
+});
+
+const secret = 'Thisisourlittlesecret';
+userSchema.plugin(encrypt, {secret: secret, encryptedFields: ['password']})
 
 const User = new mongoose.model('User', userSchema);
 
@@ -57,8 +61,8 @@ app.post('/login', function(req, res){
                 }
             }
         }
-    })
-})
+    });
+});
 app.listen(3000, function(){
     console.log('Server is running at port 3000');
-})
+});
